@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分析結果</title>
+</head>
+<body>
+    <h1>分析結果よ、シンジ！</h1>
+    <div>
+        <h2>アップロードされた画像:</h2>
+        <img src="{{ image_url }}" alt="アップロード画像" width="300">
+    </div>
+    <div>
+        <h2>予測結果:</h2>
+        <p>この画像は、ImageNetクラス <strong>{{ prediction }}</strong> に分類されたわ。</p>
+        <p>（今はまだImageNetの1000クラス分類よ。美術様式で分類するには、あんたがもっと頑張らないとダメなんだからね！）</p>
+    </div>
+    <a href="/">もう一回やる</a>
+</body>
+</html>
