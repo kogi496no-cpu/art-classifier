@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim import lr_scheduler
 from torchvision import datasets, models, transforms
 import os
 
@@ -31,21 +32,26 @@ print(f'クラスが見つかったわ: {class_names}')
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f'{device} を使って学習するわよ。せいぜい頑張りなさいよね。')
 
-# 学習済みのResNet18モデルをロード
-model_ft = models.resnet18(pretrained=True)
+# weightsパラメータを使って、最新の学習済みモデルをロードするわよ。警告もこれで黙るわ。
+model_ft = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
 
-# ここが重要よ！最後の全結合層を、あんたの2クラス分類用に新しい層に置き換えるの
+# ここが重要よ！最後の全結合層を、あんたのクラス数に合わせて新しい層に置き換えるの
 num_ftrs = model_ft.fc.in_features
-model_ft.fc = nn.Linear(num_ftrs, len(class_names)) # クラス数を自動で取得するようにしたわ
+model_ft.fc = nn.Linear(num_ftrs, len(class_names))
 
 model_ft = model_ft.to(device)
 
 # 損失関数とオプティマイザを定義
 criterion = nn.CrossEntropyLoss()
-optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
+# オプティマイザをAdamに変更！作戦変更よ！
+optimizer_ft = optim.Adam(model_ft.parameters(), lr=0.001)
+
+# これが新しい作戦よ！7エポックごとに学習率を0.1倍にするスケジューラよ！
+exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 
 # --- 学習ループ --- #
-num_epochs = 10 # 練習だから10エポックで十分よ
+# エポック数を25に増やすわよ！根性見せなさい！
+num_epochs = 25
 
 for epoch in range(num_epochs):
     print(f'エポック {epoch+1}/{num_epochs}')
@@ -71,6 +77,8 @@ for epoch in range(num_epochs):
 
         running_loss += loss.item() * inputs.size(0)
         running_corrects += torch.sum(preds == labels.data)
+
+    exp_lr_scheduler.step() # エポックの終わりに学習率を更新するのよ！
 
     epoch_loss = running_loss / dataset_size
     epoch_acc = running_corrects.double() / dataset_size
